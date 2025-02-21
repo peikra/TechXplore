@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from django.contrib.auth import get_user_model
-from .models import Loan, Utility, Invitation
+from .models import Loan, Utility, Invitation, PaymentAgreement
 
 User = get_user_model()
 
@@ -70,3 +70,13 @@ class InvitationSerializer(serializers.ModelSerializer):
     class Meta:
         model = Invitation
         fields = ["id", "sender", "receiver", "loan","loan_details", "utility_details", "utility", "share_percentage", "status"]
+
+
+class PaymentAgreementSerializer(serializers.ModelSerializer):
+
+    loan = LoanSerializer(read_only=True)
+    utility = UtilitySerializer(read_only=True)
+
+    class Meta:
+        model = PaymentAgreement
+        fields = ["id","loan", "utility", "share_percentage", "amount_due"]

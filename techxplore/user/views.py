@@ -4,7 +4,7 @@ from rest_framework.response import Response
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 from django.contrib.auth import get_user_model
-from .serializers import RegisterSerializer, UserSerializer, UserProfileSerializer, InvitationSerializer
+from .serializers import RegisterSerializer, UserSerializer, UserProfileSerializer, InvitationSerializer, PaymentAgreementSerializer
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from .models import Invitation,PaymentAgreement
 
@@ -93,3 +93,13 @@ class InvitationViewSet(viewsets.ModelViewSet):
             )
 
         return Response(InvitationSerializer(invitation).data)
+
+
+class PaymentAgreementViewSet(generics.ListAPIView):
+    queryset = PaymentAgreement.objects.all()
+    serializer_class = PaymentAgreementSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        """Return agreements where the user is involved."""
+        return PaymentAgreement.objects.filter(user=self.request.user)
