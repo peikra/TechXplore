@@ -12,7 +12,7 @@ urlpatterns = [
     path('token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
     path('user/profile/', UserInfoView.as_view(), name='user-profile'),
     path('user/finduser/', UserViewSet.as_view(), name='find-user'),
-    path('user/paymentagreements/',PaymentAgreementViewSet.as_view(), name='payment-agreements'),
+    path('api/invitations/payments/',PaymentAgreementViewSet.as_view(), name='payment-agreements'),
     path('', include(router.urls)),
 ]
 

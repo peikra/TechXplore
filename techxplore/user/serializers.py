@@ -58,22 +58,27 @@ class SenderSerializer(serializers.ModelSerializer):
 
 class InvitationSerializer(serializers.ModelSerializer):
     sender = SenderSerializer(read_only=True)
-    receiver = serializers.PrimaryKeyRelatedField(queryset=User.objects.all())
-    loan = serializers.PrimaryKeyRelatedField(queryset=Loan.objects.all(), allow_null=True, required=False,
-                                              write_only=True)
-    utility = serializers.PrimaryKeyRelatedField(queryset=Utility.objects.all(), allow_null=True, required=False,
-                                                 write_only=True)
-
-    loan_details = LoanSerializer(source="loan", read_only=True)  # Show full loan details in response
-    utility_details = UtilitySerializer(source="utility", read_only=True)
+    loan = serializers.PrimaryKeyRelatedField(queryset=Loan.objects.all(), allow_null=True, required=False, write_only=True)
+    utility = serializers.PrimaryKeyRelatedField(queryset=Utility.objects.all(), allow_null=True, required=False, write_only=True)
+    loan_details = serializers.SerializerMethodField()
+    utility_details = serializers.SerializerMethodField()
 
     class Meta:
         model = Invitation
-        fields = ["id", "sender", "receiver", "loan","loan_details", "utility_details", "utility", "share_percentage", "status"]
+        fields = ["id", "sender", "loan", "loan_details", "utility_details", "utility", "share_percentage", "status"]
+
+    def get_loan_details(self, obj):
+        if obj.loan:
+            return {"name": obj.loan.name, "monthly_payment": obj.loan.monthly_payment}
+        return None
+
+    def get_utility_details(self, obj):
+        if obj.utility:
+            return {"name": obj.utility.name, "total_due": obj.utility.total_due}
+        return None
 
 
 class PaymentAgreementSerializer(serializers.ModelSerializer):
-
     loan = LoanSerializer(read_only=True)
     utility = UtilitySerializer(read_only=True)
 
