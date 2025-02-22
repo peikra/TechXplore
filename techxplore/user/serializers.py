@@ -14,7 +14,7 @@ class RegisterSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ['personal_number','username', 'first_name', 'last_name', 'password','balance']
+        fields = ['personal_number','username', 'first_name', 'last_name', 'password','balance','avatar']
 
     def create(self, validated_data):
         user = User.objects.create_user(
@@ -65,7 +65,7 @@ class UserProfileSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ['id', 'first_name', 'last_name', 'personal_number', 'balance', 'loans', 'utilities']
+        fields = ['id', 'first_name', 'last_name', 'personal_number', 'balance', 'loans', 'utilities','avatar']
 
     def get_loans(self, obj):
         loans = Loan.objects.filter(owner=obj)

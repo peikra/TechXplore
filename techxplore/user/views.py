@@ -52,7 +52,7 @@ class InvitationViewSet(viewsets.ModelViewSet):
     def get_queryset(self):
         """Filter invitations to only those sent or received by the authenticated user."""
         user = self.request.user
-        return Invitation.objects.filter(sender=user) | Invitation.objects.filter(receiver=user)
+        return  Invitation.objects.filter(receiver=user)
 
     def create(self, request, *args, **kwargs):
         """Handle sending multiple invitations for sharing a loan or utility."""
