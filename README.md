@@ -1,18 +1,32 @@
-Project Overview
+Loan & Utility Sharing System
 
-This project is a Django REST Framework (DRF) application that allows users to manage loans and utilities, invite other users to share payments, and track balances.
+Overview
+
+This project is a Django REST Framework (DRF) application that allows users to manage loans and utilities, invite other users to share payments, and track balances efficiently. Users can find others via personal number and propose shared payment plans.
 
 Features
 
-User registration and authentication
+User Management: Users have a first name, last name, personal number, and balance.
 
-Loan and utility management
+Loans & Utilities:
 
-User invitations for sharing payments
+Loans include name, due amount, monthly payment, and payment due date.
 
-Automatic balance deductions upon agreement
+Utilities include name, due amount, and payment due date.
 
-API endpoints for managing users, loans, utilities, and invitations
+Payment Sharing:
+
+Users can invite others to share loan payments.
+
+The invited user can accept the proposal, deducting the specified amount from their balance.
+
+REST API Endpoints:
+
+User registration and profile management.
+
+Create and manage loans and utilities.
+
+Invite users and accept shared payment proposals.
 
 Installation
 
@@ -20,72 +34,94 @@ Prerequisites
 
 Python 3.10+
 
-Django
+Django & Django REST Framework
 
-Django REST Framework
-
-PostgreSQL (or any preferred database)
+PostgreSQL (or SQLite for local development)
 
 Setup
 
-Clone the repository:
+# Clone the repository
+git clone https://github.com/yourusername/your-repo.git
+cd your-repo
 
-git clone <repository_url>
-cd <project_directory>
-
-Create a virtual environment and activate it:
-
+# Create a virtual environment
 python -m venv venv
 source venv/bin/activate  # On Windows use `venv\Scripts\activate`
 
-Install dependencies:
-
+# Install dependencies
 pip install -r requirements.txt
 
-Configure your .env file (if used) for database settings.
-
-Apply migrations:
-
+# Apply migrations
 python manage.py migrate
 
-Create a superuser (optional, for admin access):
-
+# Create a superuser (optional)
 python manage.py createsuperuser
 
-Run the development server:
-
+# Start the server
 python manage.py runserver
 
 API Endpoints
 
-User Management
+Method
 
-POST /api/register/ - Register a new user
+Endpoint
 
-POST /api/token/ - Get authentication token
+Description
 
-Loan & Utility Management
+POST
 
-GET /api/loans/ - List user loans
+/api/users/register/
 
-POST /api/loans/ - Create a new loan
+Register a new user
 
-GET /api/utilities/ - List user utilities
+GET
 
-POST /api/utilities/ - Add a new utility
+/api/users/{personal_number}/
 
-Payment Sharing
+Get user details by personal number
 
-POST /api/invitations/ - Invite a user to share payment
+POST
 
-PATCH /api/invitations/<id>/ - Accept or reject invitation
+/api/loans/
+
+Create a loan
+
+GET
+
+/api/loans/
+
+List all loans
+
+POST
+
+/api/utilities/
+
+Create a utility
+
+GET
+
+/api/utilities/
+
+List all utilities
+
+POST
+
+/api/payments/share/
+
+Invite user to share payment
+
+PATCH
+
+/api/payments/share/{id}/accept/
+
+Accept shared payment invitation
 
 Technologies Used
 
 Django & Django REST Framework
 
-PostgreSQL
+PostgreSQL (or SQLite for development)
 
-Celery (for background tasks, if needed)
+Celery for background tasks (if required)
 
-Redis (for caching, if used)
+Docker (optional for deployment)
