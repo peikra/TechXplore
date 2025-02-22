@@ -98,12 +98,12 @@ class InvitationSerializer(serializers.ModelSerializer):
 
     def get_loan_details(self, obj):
         if obj.loan:
-            return {"name": obj.loan.name, "monthly_payment": obj.loan.monthly_payment}
+            return {"name": obj.loan.name, "monthly_payment": obj.loan.monthly_payment,"total_due" : obj.loan.total_due, "due_date": obj.loan.due_date, "owner": obj.loan.owner.username, "amount_paid": obj.loan.amount_paid, "months_remaining": obj.loan.months_remaining, "total_months" : obj.loan.total_months, "progress": obj.loan.progress}
         return None
 
     def get_utility_details(self, obj):
         if obj.utility:
-            return {"name": obj.utility.name, "total_due": obj.utility.total_due}
+            return {"name": obj.utility.name, "total_due": obj.utility.total_due,"due_date" : obj.utility.due_date, "address": obj.utility.address, "subscriber_number" : obj.utility.subscriber_number, "owner": obj.utility.owner.username}
         return None
 
 
