@@ -1,3 +1,6 @@
+import re
+from django.contrib.auth.password_validation import validate_password
+from django.core.exceptions import ValidationError
 from rest_framework import serializers
 from django.contrib.auth import get_user_model
 from .models import Loan, Utility, Invitation, PaymentAgreement
@@ -7,14 +10,34 @@ User = get_user_model()
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ['id','username', 'personal_number', 'first_name', 'last_name', 'balance']
+        fields = ['id','username', 'personal_number', 'first_name', 'last_name', 'balance','avatar']
 
 class RegisterSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True)
 
     class Meta:
         model = User
-        fields = ['personal_number','username', 'first_name', 'last_name', 'password','balance','avatar']
+        fields = ['personal_number','username', 'first_name', 'last_name', 'password','balance',]
+
+    def validate_password(self, value):
+        """
+        Custom password validation.
+        """
+        if len(value) < 12:
+            raise serializers.ValidationError("Password must be at least 12 characters long.")
+
+        if not any(char.isupper() for char in value):
+            raise serializers.ValidationError("Password must contain at least one uppercase letter.")
+
+        if not re.search(r'[!@#$%^&*(),.?":{}|<>]', value):
+            raise serializers.ValidationError("Password must contain at least one special character (!@#$%^&*).")
+
+        try:
+            validate_password(value)  # Uses Django's built-in password validators
+        except ValidationError as e:
+            raise serializers.ValidationError(e.messages)
+
+        return value
 
     def create(self, validated_data):
         user = User.objects.create_user(
