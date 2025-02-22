@@ -3,9 +3,10 @@ from django.shortcuts import get_object_or_404
 from rest_framework import status, generics, viewsets, filters
 from rest_framework.response import Response
 from rest_framework.permissions import AllowAny, IsAuthenticated
+from rest_framework.views import APIView
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 from django.contrib.auth import get_user_model
-from .serializers import RegisterSerializer, UserSerializer, UserProfileSerializer, InvitationSerializer, PaymentAgreementSerializer
+from .serializers import RegisterSerializer, UserSerializer, UserProfileSerializer, InvitationSerializer, PaymentAgreementSerializer,ChangeBalanceSerializer
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from .models import Invitation,PaymentAgreement, Loan, Utility
 from django.db import models
@@ -22,7 +23,7 @@ class RegisterView(generics.CreateAPIView):
 class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
     def validate(self, attrs):
         data = super().validate(attrs)
-        data['user'] = UserSerializer(self.user).data  # Return user details with token
+        data['user'] = UserSerializer(self.user).data
         return data
 
 class CustomTokenObtainPairView(TokenObtainPairView):
@@ -58,7 +59,7 @@ class InvitationViewSet(viewsets.ModelViewSet):
         data = request.data
         sender = request.user
 
-        # Extract data
+
         loan_id = data.get("loan")
         utility_id = data.get("utility")
         receivers_data = data.get("receiver", [])
@@ -66,7 +67,7 @@ class InvitationViewSet(viewsets.ModelViewSet):
         if not receivers_data:
             return Response({"error": "At least one receiver is required."}, status=status.HTTP_400_BAD_REQUEST)
 
-        # Validate total share percentage
+
         total_percentage = sum([receiver['share_percentage'] for receiver in receivers_data])
         if total_percentage > 100:
             return Response({"error": "Total share percentage cannot exceed 100%."},
@@ -107,7 +108,7 @@ class InvitationViewSet(viewsets.ModelViewSet):
         invitation.save()
 
         if status_update == "accepted":
-            # Create payment agreement for the receiver
+
             for receiver in invitation.receiver.all():
                 PaymentAgreement.objects.create(
                     user=receiver,
@@ -120,7 +121,6 @@ class InvitationViewSet(viewsets.ModelViewSet):
                     )
                 )
 
-            # Calculate the total accepted share percentage for the loan/utility
             total_accepted_share = sum(
                 inv.share_percentage for inv in Invitation.objects.filter(
                     loan=invitation.loan,
@@ -129,10 +129,10 @@ class InvitationViewSet(viewsets.ModelViewSet):
                 )
             )
 
-            # Calculate the sender's remaining share
+
             sender_share = 100 - total_accepted_share
 
-            # Update or create the sender's payment agreement
+
             sender_agreement, created = PaymentAgreement.objects.get_or_create(
                 user=invitation.sender,
                 loan=invitation.loan,
@@ -168,12 +168,25 @@ class PaymentAgreementViewSet(generics.ListAPIView):
         Get the payment agreements for the authenticated user.
         The user will only see their own payment agreements.
         """
-        # Get the authenticated user
         user = self.request.user
 
-        # Filter agreements where the user is the one responsible for payment
         latest_agreement = PaymentAgreement.objects.filter(user=user).order_by('-id').first()
 
-        # Return a queryset containing only the latest agreement
         return PaymentAgreement.objects.filter(
             id=latest_agreement.id) if latest_agreement else PaymentAgreement.objects.none()
+
+
+class UpdateUserBalanceView(APIView):
+    permission_classes = [IsAuthenticated]
+    serializer_class = ChangeBalanceSerializer
+
+    def put(self, request):
+        """
+        Update the authenticated user's balance using a PUT request.
+        """
+        user = request.user  # Get the authenticated user
+        serializer = ChangeBalanceSerializer(user, data=request.data, partial=True)
+        if serializer.is_valid():
+            serializer.save()  # Update the user's balance
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

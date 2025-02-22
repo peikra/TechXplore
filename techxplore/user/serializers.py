@@ -27,29 +27,58 @@ class RegisterSerializer(serializers.ModelSerializer):
         )
         return user
 
+class LoanSerializer(serializers.ModelSerializer):
+    months_remaining = serializers.SerializerMethodField()
+    total_months = serializers.SerializerMethodField()
+    progress = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Loan
+        fields = [
+            "id",
+            "name",
+            "due_date",
+            "total_due",
+            "monthly_payment",
+            "amount_paid",
+            "months_remaining",
+            "total_months",
+            "progress",
+        ]
+
+    def get_months_remaining(self, obj):
+        """Serialize the months_remaining property."""
+        return obj.months_remaining
+
+    def get_total_months(self, obj):
+        """Serialize the total_months property."""
+        return obj.total_months
+
+    def get_progress(self, obj):
+        """Serialize the progress property."""
+        return obj.progress
+
+
 class UserProfileSerializer(serializers.ModelSerializer):
     loans = serializers.SerializerMethodField()
     utilities = serializers.SerializerMethodField()
 
     class Meta:
         model = User
-        fields = ['first_name', 'last_name', 'personal_number', 'balance', 'loans', 'utilities']
+        fields = ['id', 'first_name', 'last_name', 'personal_number', 'balance', 'loans', 'utilities']
 
     def get_loans(self, obj):
-        return Loan.objects.filter(owner=obj).values('id','name', 'due_date', 'total_due', 'monthly_payment')
+        loans = Loan.objects.filter(owner=obj)
+        return LoanSerializer(loans, many=True).data
 
     def get_utilities(self, obj):
-        return Utility.objects.filter(owner=obj).values('id','name', 'total_due', 'due_date')
-
-class LoanSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Loan
-        fields = ["id", "name", "due_date", "total_due", "monthly_payment"]
+        utilities = Utility.objects.filter(owner=obj)
+        return utilities.values('id', 'name', 'total_due', 'due_date', 'address', 'subscriber_number')
 
 class UtilitySerializer(serializers.ModelSerializer):
     class Meta:
         model = Utility
-        fields = ["id", "name", "total_due", "due_date"]
+        fields = ["id", "name", "total_due", "due_date","address","subscriber_number"]
 
 class SenderSerializer(serializers.ModelSerializer):
     class Meta:
@@ -85,3 +114,9 @@ class PaymentAgreementSerializer(serializers.ModelSerializer):
     class Meta:
         model = PaymentAgreement
         fields = ["id","loan", "utility", "share_percentage", "amount_due"]
+
+class ChangeBalanceSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = User
+        fields = ['balance']
